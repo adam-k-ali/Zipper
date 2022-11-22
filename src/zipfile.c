@@ -24,6 +24,26 @@ size_t find_eocd(char* buffer, size_t filelen) {
     return 0;
 }
 
+/*
+Find all Central Directory File Headers in the buffer.
+*/
+u_int32_t* find_cds(char* buffer, size_t filelen, u_int16_t num_entries) {
+    // Allocate memory for the offsets
+    u_int32_t* cdfh_offsets = malloc(sizeof(u_int32_t) * num_entries);
+
+    u_int32_t counter = 0;
+    u_int32_t i = 0;
+    for (i = 0; i < filelen; i++) {
+        if (memcmp(buffer + i, "PK\001\002", 4) == 0) {
+            cdfh_offsets[counter] = i;
+            counter++;       
+        }
+    }
+
+
+    return cdfh_offsets;
+}
+
 void  parse(char *filename) {
     FILE *fp;
     char *buffer;
@@ -79,9 +99,18 @@ void  parse(char *filename) {
     }
 
     char* cdBuffer = buffer + eocd->centralDirectoryOffset;
-    CDFH* cd = (CDFH*) malloc(sizeof(CDFH));
-    parseCDFH(cdBuffer, cd);
-    printCDFH(cd);
+
+    printf("Finding Central Directory File Headers...\n");
+    u_int32_t* cdfh_offsets = find_cds(buffer, filelen, eocd->totalEntries);
+    
+    printf("Parsing Central Directory File Headers...\n");
+    // Parse the Central Directory File Headers
+    for (u_int16_t i = 0; i < eocd->totalEntries; i++) {
+        char* cdFileHeaderBuffer = buffer + cdfh_offsets[i];
+        CDFH* cdFileHeader = (CDFH*) malloc(sizeof(CDFH));
+        parseCDFH(cdFileHeaderBuffer, cdFileHeader);
+        printCDFH(cdFileHeader);
+    }
     
     free(buffer);
 }
