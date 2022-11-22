@@ -18,7 +18,7 @@ Structure of a zip file:
 
 int main() {
 
-    parse("../resources/three_files.zip");
+    parse("../resources/one_file.zip");
 
     return 0;
 }

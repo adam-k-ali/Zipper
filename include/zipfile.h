@@ -6,18 +6,17 @@ All length fields count the length in bytes.
 #ifndef ZIP_FILE_H
 #define ZIP_FILE_H
 
-#define EOCD_SIGNATURE "\x06\x05\x4b\x50"
-#define EOCD_SIGNATURE_BE "\x50\x4b\x05\x06"
-
-#define CD_SIGNATURE "\x50\x4b\x01\x02"
-#define CD_SIGNATURE_BE "\x02\x01\x4b\x50"
-
-#define LFH_SIGNATURE "\x50\x4b\x03\x04"
-#define LFH_SIGNATURE_BE "\x04\x03\x4b\x50"
+#define EOCD_SIGNATURE "PK\005\006"
+#define EOCD_SIGNATURE_E "\006\005KP"
+#define CDFH_SIGNATURE "PK\001\002"
+#define CDFH_SIGNATURE_E "\002\001KP"
+#define LFH_SIGNATURE "PK\003\004"
+#define LFH_SIGNATURE_E "\004\003KP"
 
 #define BYTE_SIZE 8
 
 #define EOCD_HDR_SIZE 22
+#define CD_HDR_SIZE 46
 
 #define SIG_SIZE 4
 #define VERSION_SIZE 2
@@ -45,47 +44,48 @@ All length fields count the length in bytes.
 
 #define CENTRAL_DIR_SIZE 4
 
+
 typedef struct {
-    char signature[SIG_SIZE];
+    char signature[SIG_SIZE]; // 0x06054b50
     
-    char diskNum[DISK_NUMBER_SIZE];
-    char startDisk[DISK_NUMBER_SIZE];
+    u_int16_t diskNum; // Number of this disk
+    u_int16_t startDisk; // Disk number where central directory starts
 
-    char numDiskEntries[NUM_ENTRIES_SIZE];
-    char totalEntries[NUM_ENTRIES_SIZE];
+    u_int16_t numDiskEntries; // Number of entries on this disk
+    u_int16_t totalEntries; // Total number of entries in the central directory on this disk
 
-    char centralDirectorySize[CENTRAL_DIR_SIZE];
-    char centralDirectoryOffset[OFFSET_SIZE];
+    u_int32_t centralDirectorySize; // Size of the central directory
+    u_int32_t centralDirectoryOffset; // Offset of start of central directory relative to start of archive
 
-    char commentLength[LENGTH_SIZE];
-    char *comment;
+    u_int16_t commentLength; // Comment length
+    char* comment; // Comment
 } EOCD;
 
 typedef struct {
-    char signature[SIG_SIZE];
+    char signature[SIG_SIZE]; // 0x02014b50
 
-    char versionMadeBy[VERSION_SIZE];
-    char versionNeeded[VERSION_SIZE];
+    u_int16_t versionMadeBy;
+    u_int16_t versionNeeded;
 
-    char flag[FLAG_SIZE];
-    char method[METHOD_SIZE];
+    u_int16_t flag;
+    u_int16_t method;
 
-    char time[TIME_SIZE]; // Last modification time
-    char date[TIME_SIZE]; // Last modification date
+    u_int16_t time; // Last modification time
+    u_int16_t date; // Last modification date
 
-    char crc[CRC_SIZE]; // CRC-32
-    char compressedSize[FILE_SIZE];
-    char uncompressedSize[FILE_SIZE];
+    u_int32_t crc; // CRC-32
+    u_int32_t compressedSize;
+    u_int32_t uncompressedSize;
 
-    char fileNameLength[LENGTH_SIZE];
-    char extraFieldLength[LENGTH_SIZE];
-    char fileCommentLength[LENGTH_SIZE];
+    u_int16_t fileNameLength;
+    u_int16_t extraFieldLength;
+    u_int16_t fileCommentLength;
 
-    char diskNumber[DISK_NUMBER_SIZE];
-    char internalFileAttr[INT_ATTR_SIZE];
-    char externalFileAttr[EXT_ATTR_SIZE];
+    u_int16_t diskNumber;
+    u_int16_t internalFileAttr;
+    u_int32_t externalFileAttr;
 
-    char localHeaderOffset[OFFSET_SIZE];
+    u_int32_t localHeaderOffset;
     
     char *fileName;
     char *extraField;
@@ -100,8 +100,12 @@ void parse(char *filename);
 /*
 Parse the EOCD header of a ZIP file
 :param buffer: the buffer which starts at the beginning of the EOCD header
-:return: the EOCD header
+:param eocd: the EOCD struct to fill
 */
-EOCD* parseEOCD(char *buffer);
+void parseEOCD(char *buffer, EOCD *eocd);
+
+void parseCDFH(char *buffer, CDFH *cdfh);
+
+int validateEOCD(EOCD *eocd);
 
 #endif
