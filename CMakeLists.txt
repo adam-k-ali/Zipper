@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(Zipper VERSION 0.1.0)
-
-include(CTest)
-enable_testing()
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set source directory
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -14,7 +13,7 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 
 # Set project files
-FILE(GLOB SOURCE_FILES ${SOURCE_DIR}/*.c)
+FILE(GLOB SOURCE_FILES ${SOURCE_DIR}/*.c ${SOURCE_DIR}/*.cpp)
 FILE(GLOB INCLUDE_FILES ${INCLUDE_DIR}/*.h)
 FILE(GLOB RESOURCE_FILES ${RESOURCE_DIR}/*)
 
@@ -28,5 +27,4 @@ add_executable(Zipper ${SOURCE_FILES} ${INCLUDE_FILES} ${RESOURCE_FILES})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
 
